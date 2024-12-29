@@ -168,7 +168,7 @@ function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
       }
     });
   }
-  // text = text.replace(/x\.com(.*?)\.\.\./g, "");
+  text = text.replace(/x\.com(.*?)\.\.\./g, "");
   text = text.replace(/(\n)+$/gm, "");
   // console.dir(arr);
 
