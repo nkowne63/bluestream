@@ -171,10 +171,7 @@ function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
   text = sanitize(text).replace(/\n/g, "<br>");
   if (arr.length > 0) {
     arr.forEach((feature) => {
-      text = text.replace(
-        sanitize(feature.substr),
-        `<a href="${feature.uri}">${sanitize(feature.substr)}</a>`
-      );
+      text = text.replace(sanitize(feature.substr), `${feature.uri}`);
     });
   }
   return text;
@@ -337,6 +334,7 @@ function genMainContent(
     //   : "",
     post.text,
     post.media,
+    post.quote ? `<br>>RT ${post.quote.text}` : "",
     "]]>",
   ];
 }
