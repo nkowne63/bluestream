@@ -333,8 +333,8 @@ function genMainContent(
     //     )
     //   : "",
     post.text,
-    post.media,
-    post.quote ? `<br>>RT ${post.quote.text}` : "",
+    post.media ? post.media : "<!-- NoMedia -->",
+    post.quote ? `<br>>RT<br>${post.quote.text}` : "",
     "]]>",
   ];
 }
