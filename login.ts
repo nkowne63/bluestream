@@ -30,6 +30,8 @@ export async function login() {
   const identifier = Deno.env.get("BLUESKY_IDENTIFIER") || "";
   const password = Deno.env.get("BLUESKY_PASSWORD") || "";
 
+  console.log(identifier, password);
+
   await agent.login({ identifier, password });
   return agent;
 }
