@@ -23,51 +23,47 @@ const agent = await login();
 function getPost(
   post: AtoprotoAPI.AppBskyFeedDefs.PostView,
   fullMedia = false,
-  includeEmbed = false,
+  includeEmbed = false
 ) {
-  const embedstr = (
-      AppBskyEmbedExternal.isView(post.embed) && includeEmbed
-    )
-    ? processExternal(post.embed.external)
-    : "";
+  const embedstr =
+    AppBskyEmbedExternal.isView(post.embed) && includeEmbed
+      ? processExternal(post.embed.external)
+      : "";
 
   const author = post.author;
 
-  const text = (AppBskyFeedPost.isRecord(post.record))
+  const text = AppBskyFeedPost.isRecord(post.record)
     ? processText(post.record)
     : "";
 
   const isReply = AppBskyFeedPost.isRecord(post.record) && post.record.reply;
 
-  const media = (
-      //if post with media
-      AppBskyEmbedImages.isView(post.embed)
-    )
-    ? post.embed.images
-    : (
-        //if post with media and Quoted post with media
-        AppBskyEmbedRecordWithMedia.isView(post.embed) &&
+  const media = //if post with media
+    AppBskyEmbedImages.isView(post.embed)
+      ? post.embed.images
+      : //if post with media and Quoted post with media
+      AppBskyEmbedRecordWithMedia.isView(post.embed) &&
         AppBskyEmbedImages.isView(post.embed.media)
-      )
-    ? post.embed.media.images
-    : [];
+      ? post.embed.media.images
+      : [];
 
-  const mediastr = (media.length > 0)
-    ? tag(
-      "div",
-      ...media.map((image) => {
-        return tag(
-          "figure",
-          tag(
-            "img",
-            { src: fullMedia ? image.fullsize : image.thumb },
-            tag("figcaption", image.alt),
-            tag("br"),
-          ),
-        );
-      }),
-    )
-    : "";
+  const mediastr =
+    media.length > 0
+      ? tag(
+          "div",
+          ...media.map((image) => {
+            return tag(
+              "figure",
+              tag(
+                "img",
+                { src: fullMedia ? image.fullsize : image.thumb },
+                tag("figcaption", image.alt),
+                tag("br")
+              )
+            );
+          })
+        )
+      : "";
 
   return {
     author: author,
@@ -84,37 +80,32 @@ function getPost(
 function getQuotePost(
   post: AtoprotoAPI.AppBskyFeedDefs.PostView,
   fullMedia = false,
-  includeEmbed = false,
+  includeEmbed = false
 ) {
-  const quotePost = (
-      //Text-only post with Quoted post with media
-      AppBskyEmbedRecord.isView(post.embed) &&
-      AppBskyEmbedRecord.isViewRecord(post.embed.record)
-    )
-    ? post.embed.record
-    : (
-        //Media post with quoted post with media
-        AppBskyEmbedRecordWithMedia.isView(post.embed) &&
+  const quotePost =
+    //Text-only post with Quoted post with media
+    AppBskyEmbedRecord.isView(post.embed) &&
+    AppBskyEmbedRecord.isViewRecord(post.embed.record)
+      ? post.embed.record
+      : //Media post with quoted post with media
+      AppBskyEmbedRecordWithMedia.isView(post.embed) &&
         AppBskyEmbedRecord.isViewRecord(post.embed.record.record)
-      )
-    ? post.embed.record.record
-    : undefined;
+      ? post.embed.record.record
+      : undefined;
 
   if (!quotePost) return undefined;
   const author = quotePost.author;
-  const text = (AtoprotoAPI.AppBskyFeedPost.isRecord(quotePost.value))
+  const text = AtoprotoAPI.AppBskyFeedPost.isRecord(quotePost.value)
     ? processText(quotePost.value)
     : "";
-  const isReply = AppBskyFeedPost.isRecord(quotePost.value) &&
-    quotePost.value.reply;
+  const isReply =
+    AppBskyFeedPost.isRecord(quotePost.value) && quotePost.value.reply;
 
   const medias: AtoprotoAPI.AppBskyEmbedImages.ViewImage[] = [];
   let embedstr = "";
   if (quotePost.embeds) {
     quotePost.embeds.forEach((embed) => {
-      if (
-        AppBskyEmbedExternal.isView(embed) && includeEmbed
-      ) {
+      if (AppBskyEmbedExternal.isView(embed) && includeEmbed) {
         embedstr += processExternal(embed.external);
       }
 
@@ -130,22 +121,23 @@ function getQuotePost(
     });
   }
 
-  const mediastr = (medias.length > 0)
-    ? tag(
-      "div",
-      ...medias.map((image) => {
-        return tag(
-          "figure",
-          tag(
-            "img",
-            { src: fullMedia ? image.fullsize : image.thumb },
-            tag("figcaption", image.alt),
-            tag("br"),
-          ),
-        );
-      }),
-    )
-    : "";
+  const mediastr =
+    medias.length > 0
+      ? tag(
+          "div",
+          ...medias.map((image) => {
+            return tag(
+              "figure",
+              tag(
+                "img",
+                { src: fullMedia ? image.fullsize : image.thumb },
+                tag("figcaption", image.alt),
+                tag("br")
+              )
+            );
+          })
+        )
+      : "";
 
   return {
     uri: quotePost.uri,
@@ -157,9 +149,7 @@ function getQuotePost(
   };
 }
 
-function processText(
-  record: AtoprotoAPI.AppBskyFeedPost.Record,
-) {
+function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
   interface facetLink {
     substr: string;
     uri: string;
@@ -183,7 +173,7 @@ function processText(
     arr.forEach((feature) => {
       text = text.replace(
         sanitize(feature.substr),
-        `<a href="${feature.uri}">${sanitize(feature.substr)}</a>`,
+        `<a href="${feature.uri}">${sanitize(feature.substr)}</a>`
       );
     });
   }
@@ -191,9 +181,9 @@ function processText(
 }
 
 function processExternal(
-  external: AtoprotoAPI.AppBskyEmbedExternal.ViewExternal,
+  external: AtoprotoAPI.AppBskyEmbedExternal.ViewExternal
 ) {
-  const imgstr = (external.thumb) ? tag("img", { src: external.thumb }) : "";
+  const imgstr = external.thumb ? tag("img", { src: external.thumb }) : "";
   return tag(
     "blockquote",
     tag("a", { href: external.uri }, tag("b", external.title)),
@@ -202,29 +192,38 @@ function processExternal(
       imgstr,
       tag(
         "figcaption",
-        `(${new URL(external.uri).hostname}) ${external.description}`,
-      ),
-    ),
+        `(${new URL(external.uri).hostname}) ${external.description}`
+      )
+    )
   );
 }
 
 // $typeが含まれていないので正常に判定できないものを自前実装
 // deno-lint-ignore no-explicit-any
 function isReplyRef(v: any): v is AtoprotoAPI.AppBskyFeedPost.ReplyRef {
-  return !!v && typeof v === "object" && Object.hasOwn(v, "root") &&
-    AppBskyFeedDefs.isPostView(v.root) && Object.hasOwn(v, "parent") &&
-    AppBskyFeedDefs.isPostView(v.parent);
+  return (
+    !!v &&
+    typeof v === "object" &&
+    Object.hasOwn(v, "root") &&
+    AppBskyFeedDefs.isPostView(v.root) &&
+    Object.hasOwn(v, "parent") &&
+    AppBskyFeedDefs.isPostView(v.parent)
+  );
 }
 function isProfileViewBasic(
-  v: unknown,
+  v: unknown
 ): v is AtoprotoAPI.AppBskyActorDefs.ProfileViewBasic {
-  return !!v && typeof v === "object" && Object.hasOwn(v, "did") &&
-    Object.hasOwn(v, "handle");
+  return (
+    !!v &&
+    typeof v === "object" &&
+    Object.hasOwn(v, "did") &&
+    Object.hasOwn(v, "handle")
+  );
 }
 
 function genTitle(
   author: AppBskyActorDefs.ProfileViewDetailed,
-  feed: AtoprotoAPI.AppBskyFeedDefs.FeedViewPost,
+  feed: AtoprotoAPI.AppBskyFeedDefs.FeedViewPost
 ) {
   const { handle } = author;
   const { post, reason, reply } = feed;
@@ -258,18 +257,15 @@ function genMainContent(
   includeRepost: boolean,
   fullMedia: boolean,
   replyContext: boolean,
-  includeEmbed: boolean,
+  includeEmbed: boolean
 ) {
   const post = getPost(feed.post, fullMedia, includeEmbed);
-  const reply = (AppBskyFeedDefs.isPostView(feed.reply?.parent))
+  const reply = AppBskyFeedDefs.isPostView(feed.reply?.parent)
     ? getPost(feed.reply.parent, fullMedia, includeEmbed)
     : undefined;
 
   if (usePsky) {
-    if (
-      includeRepost &&
-      post.quote
-    ) {
+    if (includeRepost && post.quote) {
       return ["[quote] ", uriToPostLink(post.quote.uri, usePsky)];
     }
 
@@ -278,67 +274,69 @@ function genMainContent(
 
   return [
     "<![CDATA[",
-    tag(
-      "div",
-      tag("b", sanitize(post.author.displayName || ""), " "),
-      tag("i", `@${post.author.handle || "unknown"} `),
-      tag(
-        "a",
-        { href: uriToPostLink(post.uri, usePsky) },
-        post.isReply ? "replied" : "posted",
-      ),
-      ":<br>",
-      tag("p", post.text, post.embed),
-      post.media,
-    ),
-    (post.quote)
-      ? tag(
-        "div",
-        `<br>[quote]<br>`,
-        tag("b", sanitize(post.quote.author.displayName || "")),
-        tag("i", `@${post.quote.author.handle || "unknown"} `),
-        tag(
-          "a",
-          { href: uriToPostLink(post.quote.uri, usePsky) },
-          post.quote.isReply ? "replied" : "posted",
-        ),
-        ":<br>",
-        tag("p", post.quote.text, post.quote.embed),
-        post.quote.media,
-      )
-      : "",
-    (replyContext && reply)
-      ? tag(
-        "div",
-        "<hr>",
-        tag("b", sanitize(reply.author.displayName || ""), " "),
-        tag("i", `@${reply.author.handle || "unknown"} `),
-        tag(
-          "a",
-          { href: uriToPostLink(reply.uri, usePsky) },
-          reply.isReply ? "replied" : "posted",
-        ),
-        ":<br>",
-        tag("p", reply.text, reply.embed),
-        reply.media,
-        (reply.quote)
-          ? tag(
-            "div",
-            `<br>[quote]<br>`,
-            tag("b", sanitize(reply.quote.author.displayName || "")),
-            tag("i", `@${reply.quote.author.handle || "unknown"} `),
-            tag(
-              "a",
-              { href: uriToPostLink(reply.quote.uri, usePsky) },
-              reply.quote.isReply ? "replied" : "posted",
-            ),
-            ":<br>",
-            tag("p", reply.quote.text, reply.quote.embed),
-            reply.quote.media,
-          )
-          : "",
-      )
-      : "",
+    // tag(
+    //   "div",
+    //   tag("b", sanitize(post.author.displayName || ""), " "),
+    //   tag("i", `@${post.author.handle || "unknown"} `),
+    //   tag(
+    //     "a",
+    //     { href: uriToPostLink(post.uri, usePsky) },
+    //     post.isReply ? "replied" : "posted"
+    //   ),
+    //   ":<br>",
+    //   tag("p", post.text, post.embed),
+    //   post.media
+    // ),
+    // post.quote
+    //   ? tag(
+    //       "div",
+    //       `<br>[quote]<br>`,
+    //       tag("b", sanitize(post.quote.author.displayName || "")),
+    //       tag("i", `@${post.quote.author.handle || "unknown"} `),
+    //       tag(
+    //         "a",
+    //         { href: uriToPostLink(post.quote.uri, usePsky) },
+    //         post.quote.isReply ? "replied" : "posted"
+    //       ),
+    //       ":<br>",
+    //       tag("p", post.quote.text, post.quote.embed),
+    //       post.quote.media
+    //     )
+    //   : "",
+    // replyContext && reply
+    //   ? tag(
+    //       "div",
+    //       "<hr>",
+    //       tag("b", sanitize(reply.author.displayName || ""), " "),
+    //       tag("i", `@${reply.author.handle || "unknown"} `),
+    //       tag(
+    //         "a",
+    //         { href: uriToPostLink(reply.uri, usePsky) },
+    //         reply.isReply ? "replied" : "posted"
+    //       ),
+    //       ":<br>",
+    //       tag("p", reply.text, reply.embed),
+    //       reply.media,
+    //       reply.quote
+    //         ? tag(
+    //             "div",
+    //             `<br>[quote]<br>`,
+    //             tag("b", sanitize(reply.quote.author.displayName || "")),
+    //             tag("i", `@${reply.quote.author.handle || "unknown"} `),
+    //             tag(
+    //               "a",
+    //               { href: uriToPostLink(reply.quote.uri, usePsky) },
+    //               reply.quote.isReply ? "replied" : "posted"
+    //             ),
+    //             ":<br>",
+    //             tag("p", reply.quote.text, reply.quote.embed),
+    //             reply.quote.media
+    //           )
+    //         : ""
+    //     )
+    //   : "",
+    post.text,
+    post.media,
     "]]>",
   ];
 }
@@ -346,7 +344,7 @@ function genMainContent(
 const actors: Record<string, AppBskyActorDefs.ProfileViewDetailed> = {};
 
 async function getActor(
-  handleOrDid: string,
+  handleOrDid: string
 ): Promise<AppBskyActorDefs.ProfileViewDetailed> {
   try {
     const did = handleOrDid.startsWith("did:plc:")
@@ -435,7 +433,8 @@ Deno.serve(async (request: Request) => {
           AppBskyRichtextFacet.isMention(feature)
         )
       )
-    ) return false;
+    )
+      return false;
     return true;
   });
 
@@ -453,9 +452,9 @@ Deno.serve(async (request: Request) => {
     tag(
       "channel",
       tag("title", `Bluestream (${handle})`),
-      `<atom:link href="${
-        sanitize(origin + "/" + did + search)
-      }" rel="self" type="application/rss+xml" />`,
+      `<atom:link href="${sanitize(
+        origin + "/" + did + search
+      )}" rel="self" type="application/rss+xml" />`,
       tag("link", `https://bsky.app/profile/${did}`),
       tag("description", `${handle}'s posts in ${BLUESKY_SERVICE}`),
       AppBskyFeedDefs.isPostView(firstPost) &&
@@ -474,28 +473,30 @@ Deno.serve(async (request: Request) => {
               includeRepost,
               fullMedia,
               replyContext,
-              includeEmbed,
-            ),
+              includeEmbed
+            )
           ),
-          ...getPost(post).mediaarr.map((image) =>
-            `<enclosure type="image/jpeg" length="0" url="${
-              fullMedia ? image.fullsize : image.thumb
-            }"/>`
-          ).join(""),
+          ...getPost(post)
+            .mediaarr.map(
+              (image) =>
+                `<enclosure type="image/jpeg" length="0" url="${
+                  fullMedia ? image.fullsize : image.thumb
+                }"/>`
+            )
+            .join(""),
           tag("link", uriToPostLink(post.uri, usePsky)),
           tag(
             "guid",
             { isPermaLink: "false" },
-            post.uri +
-              (AppBskyFeedDefs.isReasonRepost(reason) ? "-repost" : ""),
+            post.uri + (AppBskyFeedDefs.isReasonRepost(reason) ? "-repost" : "")
           ),
           AppBskyFeedPost.isRecord(post.record)
             ? tag("pubDate", toUTCString(post.record.createdAt))
             : "",
-          tag("dc:creator", post.author.handle),
+          tag("dc:creator", post.author.handle)
         )
-      ),
-    ),
+      )
+    )
   );
   return new Response(prefix + res, {
     headers: { "content-type": "application/xml" },
