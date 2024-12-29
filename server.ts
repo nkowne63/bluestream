@@ -155,6 +155,7 @@ function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
     uri: string;
   }
   let text = record.text;
+  // console.dir(record);
   const arr: facetLink[] = [];
   if (record.facets) {
     record.facets.forEach((facet) => {
@@ -167,6 +168,9 @@ function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
       }
     });
   }
+  text = text.replace(/x\.com(.*?)\.\.\./g, "");
+  text = text.replace(/(\n)+$/gm, "");
+  // console.dir(arr);
 
   text = sanitize(text).replace(/\n/g, "<br>");
   if (arr.length > 0) {
@@ -174,6 +178,7 @@ function processText(record: AtoprotoAPI.AppBskyFeedPost.Record) {
       text = text.replace(sanitize(feature.substr), `${feature.uri}`);
     });
   }
+  // console.log(text);
   return text;
 }
 
